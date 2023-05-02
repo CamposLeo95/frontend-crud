@@ -1,19 +1,21 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import './styles.css';
 
+import { createSession } from '../../services/api';
+import { AuthContext } from '../../contexts/auth';
+
 const LoginPage = () => {
+    const { login } = useContext(AuthContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = (e) =>{
-        e.preventDefault;
+    const handleLogin = async() =>{
+        login(email, password);
 
-        setEmail('');
-        setPassword('');
     };
     
     return(
-        <div id="login">
+        <div id="login">      
             <div className="title"><h1>Login</h1></div>
             <div className="form">
                 <div className="field">

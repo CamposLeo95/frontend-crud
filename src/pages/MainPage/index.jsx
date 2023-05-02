@@ -1,3 +1,4 @@
+import { useEffect, useState, useContext} from 'react';
 import './styles.css';
 
 import { Link } from 'react-router-dom';
@@ -5,13 +6,13 @@ import { Link } from 'react-router-dom';
 import Nav from './Nav';
 import Search from './Search';
 import Repositories from './Repositories';
+import { AuthContext } from '../../contexts/auth';
 
-import { createRepository, getRepositories } from '../../services/api';
-import { useEffect, useState } from 'react';
+import { createRepository, getRepositories, destroyRepository } from '../../services/api';
 
-const userId = '6449907dd9a137925b560f2a'
 
 const MainPage = () => {
+    const{ user, logout } = useContext(AuthContext);
 
     const [repositories, setRepositories] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,14 +20,13 @@ const MainPage = () => {
 
     const loadData = async(query = '') => {
         try {
-            const response = await getRepositories(userId);
+            const response = await getRepositories(user?.id, query);
             setRepositories(response.data);
             setLoading(false);
         } catch (error) {
             console.log(error);
             setLoadingError(true);
-        }
-        
+        }  
     }
 
     useEffect(() => {
@@ -35,20 +35,32 @@ const MainPage = () => {
     }, []);
 
     const handleLogout = () => {
-        console.log('out');
+        logout();
     };
 
     const handleSearch = (query) => {
-        console.log('search', query);
+        loadData(query);
     };
 
-
-    const handleDeleteRepo = (repository) =>{
-        console.log(repository);
+    const handleDeleteRepo = async (repository) =>{
+        try{
+            await destroyRepository(user?.id, repository._id);
+            await loadData();
+        }catch (error){
+            console.error(error);
+            setLoadingError(true);
+        } 
     };
 
-    const handleNewRepo = (url) =>{
-        createRepository;
+    const handleNewRepo = async (url) =>{
+        try {
+           await createRepository(user?.id, url);
+           await loadData();
+        } catch (error) {
+            console.error(error);
+            setLoadingError(true);
+        }
+        
     };
 
     if(loadingError){

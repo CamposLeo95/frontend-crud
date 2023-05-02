@@ -1,15 +1,34 @@
-import { BrowserRouter as Router, Route, Routes  } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate  } from 'react-router-dom';
+import { useContext } from 'react';
 
 import LoginPage from './pages/loginPage';
 import MainPage from './pages/MainPage';
 
+import { AuthContext, AuthProvider } from './contexts/auth';
+
 const AppRoutes = () => {
+    const Private = ({children}) =>{
+        const { authenticated, loading } = useContext(AuthContext);
+
+        if(loading){
+            return <div className="loading">Carregando...</div>
+        }
+
+        if(!authenticated){
+            return <Navigate to="/login"/>
+        }
+
+        return children
+    }
+
     return(
         <Router>
-            <Routes>
-                <Route exact path='/login' element={<LoginPage />}/>
-                <Route exact path='/' element={<MainPage />}/>
-            </Routes>
+            <AuthProvider>
+                <Routes>
+                    <Route exact path='/login' element={<LoginPage />}/>
+                    <Route exact path='/' element={<Private><MainPage /></Private>}/>
+                </Routes>
+            </AuthProvider>
         </Router>
     )
 }
